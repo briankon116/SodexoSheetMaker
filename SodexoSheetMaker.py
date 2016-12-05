@@ -50,6 +50,8 @@ def twitter(file, sodexoSheet_sheet):
             date = dateTimeList[0]
             time = dateTimeList[len(dateTimeList)-2]
             impressions = row[4]
+            impressionsInt = impressions.split('.')[0]
+            post = row[1]
             
             # Check if the caption is a reply and if it is, don't include it
             if(caption[0] == '@'):
@@ -58,8 +60,8 @@ def twitter(file, sodexoSheet_sheet):
             sodexoSheet_sheet.cell(row=count , column=1).value = date
             sodexoSheet_sheet.cell(row=count , column=2).value = time
             sodexoSheet_sheet.cell(row=count , column=3).value = caption
-            sodexoSheet_sheet.cell(row=count , column=4).value = impressions
-            sodexoSheet_sheet.cell(row=count, column=6).value = facebookTwitterImages
+            sodexoSheet_sheet.cell(row=count , column=4).value = impressionsInt
+            sodexoSheet_sheet.cell(row=count, column=6).value = '=HYPERLINK("' + post + '\","Go to post\")'
             sodexoSheet_sheet.cell(row=count, column=7).value = 'TWITTER'
             count+=1
 
@@ -79,21 +81,38 @@ def facebook(file, sodexoSheet_sheet):
         
         caption = facebookReader_sheet.cell(row,2).value
         impressions = facebookReader_sheet.cell(row,11).value
+        
+        # Check if there are any impressions for this current post, if there aren't any, don't include it
+        if(impressions == 0):
+            row+=1
+            continue
+        
         dateTime = facebookReader_sheet.cell(row,6).value
         dateTimeAsDateTime = datetime.datetime(*xlrd.xldate_as_tuple(dateTime, facebookReader.datemode))
         date = str(dateTimeAsDateTime.date())
         timeFull = str(dateTimeAsDateTime.time())
         timeList = timeFull.split(':')
         time = timeList[0] + ":" + timeList[1]
+        post = facebookReader_sheet.cell(row,1).value
+        #normalTime = militaryToNormalTime(time)
+        #print time + " to " + normalTime
         #print date
 
         sodexoSheet_sheet.cell(row=count , column=1).value = date
         sodexoSheet_sheet.cell(row=count, column=2).value = time
         sodexoSheet_sheet.cell(row=count , column=3).value = caption
         sodexoSheet_sheet.cell(row=count , column=4).value = impressions
-        sodexoSheet_sheet.cell(row=count, column=6).value = facebookTwitterImages
+        sodexoSheet_sheet.cell(row=count, column=6).value = '=HYPERLINK("' + post + '\","Go to post\")'
         sodexoSheet_sheet.cell(row=count, column=7).value = 'FACEBOOK'
         count+=1
         row+=1
+        
+def militaryToNormalTime(militaryTime):
+    militaryTimeList = militaryTime.split(':')
+    if(int(militaryTime[0]) > 12):
+        normalTime = str(int(militaryTime[0] - 12)) + ":" + militaryTime[1] + " PM"
+    else:
+        normalTime = militaryTime[0] + ":" + militaryTime[1] + " AM"
+    return normalTime
             
 main()
