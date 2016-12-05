@@ -1,4 +1,4 @@
-import xlrd, os, csv, openpyxl
+import xlrd, os, csv, openpyxl, datetime
 from shutil import copyfile
 
 # Counter for which row in sodexo sheet to put this
@@ -79,7 +79,16 @@ def facebook(file, sodexoSheet_sheet):
         
         caption = facebookReader_sheet.cell(row,2).value
         impressions = facebookReader_sheet.cell(row,11).value
+        dateTime = facebookReader_sheet.cell(row,6).value
+        dateTimeAsDateTime = datetime.datetime(*xlrd.xldate_as_tuple(dateTime, facebookReader.datemode))
+        date = str(dateTimeAsDateTime.date())
+        timeFull = str(dateTimeAsDateTime.time())
+        timeList = timeFull.split(':')
+        time = timeList[0] + ":" + timeList[1]
+        #print date
 
+        sodexoSheet_sheet.cell(row=count , column=1).value = date
+        sodexoSheet_sheet.cell(row=count, column=2).value = time
         sodexoSheet_sheet.cell(row=count , column=3).value = caption
         sodexoSheet_sheet.cell(row=count , column=4).value = impressions
         sodexoSheet_sheet.cell(row=count, column=6).value = facebookTwitterImages
