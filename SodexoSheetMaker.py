@@ -37,33 +37,45 @@ def twitter(file, sodexoSheet_sheet):
     with open(file, 'rb') as f:
         twitterReader = csv.reader(f)
 
+        rows = 0
         # Iterate through all of the rows of the sheet and get all of the values we want
         for row in twitterReader:            
-            if(count == 2):
-                count += 1
+            if(rows == 0):
+                rows += 1
                 continue
             
             # Get all of the values needed
             caption = row[2]
+            # Check if the caption is a reply and if it is, don't include it
+            if(caption[0] == '@'):
+                continue
+            if '&amp;' in caption:
+                caption = caption.replace('&amp;', '&')
+            
             dateTime = row[3]
             dateTimeList = dateTime.split(' ')
             date = dateTimeList[0]
             time = dateTimeList[len(dateTimeList)-2]
-            impressions = row[4]
-            impressionsInt = impressions.split('.')[0]
-            post = row[1]
             
-            # Check if the caption is a reply and if it is, don't include it
-            if(caption[0] == '@'):
-                continue
+            impressions = row[4]
+            try:
+                impressionsFloat = float(impressions)
+                impressionsInt = int(impressionsFloat)
+            except ValueError,e:
+                print "error",e,"on line",count
+                impressionsFloat = 0
+            
+            post = row[1]
 
             sodexoSheet_sheet.cell(row=count , column=1).value = date
             sodexoSheet_sheet.cell(row=count , column=2).value = time
             sodexoSheet_sheet.cell(row=count , column=3).value = caption
-            sodexoSheet_sheet.cell(row=count , column=4).value = impressionsInt
+            sodexoSheet_sheet.cell(row=count , column=4).value = impressionsFloat
+            sodexoSheet_sheet.cell(row=count, column=5).value = 'N/A'
             sodexoSheet_sheet.cell(row=count, column=6).value = '=HYPERLINK("' + post + '\","Go to post\")'
             sodexoSheet_sheet.cell(row=count, column=7).value = 'TWITTER'
             count+=1
+            rows+=1
 
 def facebook(file, sodexoSheet_sheet):
     global count
@@ -102,6 +114,7 @@ def facebook(file, sodexoSheet_sheet):
         sodexoSheet_sheet.cell(row=count, column=2).value = time
         sodexoSheet_sheet.cell(row=count , column=3).value = caption
         sodexoSheet_sheet.cell(row=count , column=4).value = impressions
+        sodexoSheet_sheet.cell(row=count, column=5).value = 'N/A'
         sodexoSheet_sheet.cell(row=count, column=6).value = '=HYPERLINK("' + post + '\","Go to post\")'
         sodexoSheet_sheet.cell(row=count, column=7).value = 'FACEBOOK'
         count+=1
